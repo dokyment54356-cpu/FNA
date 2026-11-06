@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калькулятор баллов — Повышение FNA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f1eb;
+      --bg-pattern: #ebe6dc;
+      --surface: #fffcf7;
+      --surface2: #f7f3ec;
+      --ink: #1a1a1a;
+      --ink-soft: #5c5a55;
+      --ink-muted: #9a9690;
+      --line: #e5dfd4;
+      --line-strong: #d4cdc0;
+      --teal: #0d9488;
+      --teal-dark: #0f766e;
+      --teal-soft: #ccfbf1;
+      --teal-glow: rgba(13, 148, 136, 0.18);
+      --coral: #e11d48;
+      --amber: #d97706;
+      --amber-soft: #fef3c7;
+      --green: #059669;
+      --green-soft: #d1fae5;
+      --shadow: 0 1px 2px rgba(26,26,26,0.04), 0 8px 24px rgba(26,26,26,0.06);
+      --shadow-lg: 0 4px 6px rgba(26,26,26,0.03), 0 16px 40px rgba(26,26,26,0.08);
+      --radius: 20px;
+      --radius-sm: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.5;
+      background-image:
+        radial-gradient(ellipse 100% 80% at 0% 0%, rgba(13,148,136,0.07), transparent 50%),
+        radial-gradient(ellipse 80% 60% at 100% 100%, rgba(217,119,6,0.05), transparent 45%);
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 20px 100px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--teal-soft);
+      color: var(--teal-dark);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+
+    header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--ink-soft);
+      font-size: 15px;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 11px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--teal);
+      color: #fff;
+      box-shadow: 0 4px 14px var(--teal-glow);
+    }
+    .btn-primary:hover {
+      background: var(--teal-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--teal-glow);
+    }
+
+    .btn-danger {
+      background: #fff;
+      color: var(--coral);
+      border: 1.5px solid #fecdd3;
+    }
+    .btn-danger:hover {
+      background: #fff1f2;
+      border-color: #fda4af;
+    }
+
+    .save-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      padding: 8px 14px;
+      background: var(--surface);
+      border-radius: 999px;
+      border: 1.5px solid var(--line);
+    }
+    .save-pill.on {
+      color: var(--green);
+      background: var(--green-soft);
+      border-color: #a7f3d0;
+    }
+    .save-pill .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .save-pill.on .dot {
+      box-shadow: 0 0 0 3px rgba(5,150,105,0.2);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-top {
+      padding: 16px 22px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1.5px solid var(--line);
+      background: var(--surface2);
+    }
+
+    .card-top .icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .card-top .icon.teal { background: var(--teal-soft); }
+    .card-top .icon.amber { background: var(--amber-soft); }
+
+    .card-top h2 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .card-top span {
+      font-size: 12px;
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--line);
+      transition: background 0.15s;
+    }
+    .row:last-child { border-bottom: none; }
+    .row:hover { background: rgba(13,148,136,0.03); }
+
+    .row-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .row-hint {
+      font-size: 11.5px;
+      color: var(--ink-muted);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    .pts-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal-dark);
+      background: var(--teal-soft);
+      padding: 6px 12px;
+      border-radius: 8px;
+      min-width: 52px;
+      text-align: center;
+    }
+
+    .qty-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .qty-wrap:focus-within {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px var(--teal-glow);
+      background: #fff;
+    }
+
+    .qty-btn {
+      width: 34px; height: 36px;
+      border: none;
+      background: transparent;
+      color: var(--ink-soft);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .qty-btn:hover { color: var(--teal); background: var(--teal-soft); }
+
+    .qty-input {
+      width: 44px;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      outline: none;
+      -moz-appearance: textfield;
+      padding: 0;
+    }
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    .row-sum {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      min-width: 48px;
+      text-align: right;
+    }
+    .row-sum.active { color: var(--teal-dark); }
+
+    .manual-body {
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .manual-body .info { flex: 1; min-width: 200px; }
+    .manual-body .info h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .manual-body .info p {
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .manual-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 4px 4px 4px 14px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .manual-field:focus-within {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px rgba(217,119,6,0.15);
+      background: #fff;
+    }
+    .manual-field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      white-space: nowrap;
+    }
+    .manual-input {
+      width: 100px;
+      border: none;
+      background: transparent;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      text-align: right;
+      outline: none;
+      padding: 8px 10px;
+      -moz-appearance: textfield;
+    }
+    .manual-input::-webkit-outer-spin-button,
+    .manual-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+    }
+    .stat.fna {
+      background: linear-gradient(145deg, #f0fdfa, #ccfbf1);
+      border-color: #99f6e4;
+    }
+    .stat.other {
+      background: linear-gradient(145deg, #fffbeb, #fef3c7);
+      border-color: #fde68a;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+    .stat.fna .stat-value { color: var(--teal-dark); }
+    .stat.other .stat-value { color: var(--amber); }
+
+    .stat-grand {
+      grid-column: 1 / -1;
+      background: var(--ink);
+      border: none;
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-lg);
+    }
+    .stat-grand .stat-label {
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 0;
+    }
+    .stat-grand .stat-value {
+      color: #fff;
+      font-size: 36px;
+    }
+
+    .progress-card {
+      background: var(--surface);
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .progress-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      margin-bottom: 14px;
+    }
+
+    .bar-track {
+      height: 10px;
+      background: var(--bg-pattern);
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+    }
+    .bar-fna {
+      background: linear-gradient(90deg, #14b8a6, #0d9488);
+      transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
+      border-radius: 999px 0 0 999px;
+    }
+    .bar-other {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+      transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .bar-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .bar-labels .fna { color: var(--teal-dark); }
+    .bar-labels .oth { color: var(--amber); }
+
+    .hint {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.5;
+      background: var(--surface2);
+      color: var(--ink-soft);
+      border-left: 3px solid var(--line-strong);
+    }
+    .hint.ok {
+      background: var(--green-soft);
+      color: #065f46;
+      border-left-color: var(--green);
+    }
+    .hint.warn {
+      background: #fff7ed;
+      color: #9a3412;
+      border-left-color: var(--amber);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      z-index: 999;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 26px; }
+      .row {
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 8px 12px;
+      }
+      .row-name { grid-column: 1 / -1; }
+      .pts-chip { justify-self: start; }
+      .qty-wrap { justify-self: end; }
+      .row-sum { grid-column: 1 / -1; text-align: left; padding-top: 4px; }
+      .summary { grid-template-columns: 1fr; }
+      .manual-body { flex-direction: column; align-items: stretch; }
+      .manual-field { width: 100%; }
+      .manual-input { flex: 1; width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="badge">FNA · Система повышения</div>
+      <h1>Калькулятор баллов</h1>
+      <p>Считай активность для повышения. Данные сохраняются автоматически.</p>
+    </header>
+
+    <div class="toolbar">
+      <button class="btn btn-primary" id="saveBtn" type="button">Сохранить</button>
+      <button class="btn btn-danger" id="resetBtn" type="button">Сбросить</button>
+      <div class="save-pill" id="saveStatus">
+        <span class="dot"></span>
+        <span id="saveText">Автосохранение</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="icon teal">📋</div>
+        <div>
+          <h2>Работа FNA</h2>
+          <span>Экзамены, патрули, КПП, тренировки</span>
+        </div>
+      </div>
+      <div id="activities"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="icon amber">📦</div>
+        <div>
+          <h2>МП / Поставки / прочее</h2>
+          <span>Баллы из благодарностей — вводи вручную</span>
+        </div>
+      </div>
+      <div class="manual-body">
+        <div class="info">
+          <h3>Сумма баллов</h3>
+          <p>Скрин сообщения с баллами + боди-камера</p>
+        </div>
+        <div class="manual-field">
+          <label>баллов</label>
+          <input type="number" class="manual-input" id="manualPoints" min="0" step="1" value="0" />
+        </div>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="stat fna">
+        <div class="stat-label">Работа FNA</div>
+        <div class="stat-value" id="fnaTotal">0</div>
+      </div>
+      <div class="stat other">
+        <div class="stat-label">МП / прочее</div>
+        <div class="stat-value" id="otherTotal">0</div>
+      </div>
+      <div class="stat-grand">
+        <div class="stat-label">Итого</div>
+        <div class="stat-value" id="grandTotal">0</div>
+      </div>
+    </div>
+
+    <div class="progress-card">
+      <div class="progress-title">Доля работы FNA</div>
+      <div class="bar-track">
+        <div class="bar-fna" id="fnaBar" style="width:0%"></div>
+        <div class="bar-other" id="otherBar" style="width:0%"></div>
+      </div>
+      <div class="bar-labels">
+        <span class="fna" id="fnaPct">FNA 0%</span>
+        <span class="oth" id="otherPct">Прочее 0%</span>
+      </div>
+      <div class="hint" id="percentHint">
+        Рекомендация: 35–40% от повышения — работа FNA. Остальное можно набирать МП, поставками и т.д.
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const ACTIVITIES = [
+      { key: "exams", name: "Устные / практические экзамены", hint: "Скрин из итоги-экзаменов", points: 20 },
+      { key: "interview", name: "Проведение собеседования", hint: "Скрин из кадровый-аудит на инвайт", points: 15 },
+      { key: "reports_trainee", name: "Проверка отчётов стажёров", hint: "Скрин из отчёт-на-повышение с реакцией", points: 10 },
+      { key: "reports_fna", name: "Проверка отчётов сотрудников FNA", hint: "Скрин из отчёты-на-повышение с реакцией", points: 15 },
+      { key: "patrol", name: "Патруль для обучения стажёра", hint: "30 мин · 3 скрина на 0 / 15 / 30 мин", points: 20 },
+      { key: "checkpoint", name: "Дежурство на КПП", hint: "1 час · 3 скрина на 0 / 30 / 60 мин", points: 30 },
+      { key: "gnews", name: "Откидывание гос. волны", hint: "Скрин сообщения из gnews", points: 10 },
+      { key: "arrest", name: "Арест", hint: "Скрин планшета с арестом", points: 7 },
+      { key: "training", name: "Тренировка с отчётом", hint: "Отчёт в канал тренировок", points: 80 }
+    ];
+
+    const STORAGE_KEY = "fna-promo-v2";
+    let state = { qty: {}, manual: 0 };
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const d = JSON.parse(raw);
+          state.qty = d.qty || {};
+          state.manual = d.manual || 0;
+          setSave(true, "Данные загружены");
+        } else setSave(true, "Автосохранение");
+      } catch (e) { setSave(false, "Нет сохранения"); }
+    }
+
+    function save() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        setSave(true, "Сохранено");
+        return true;
+      } catch (e) {
+        setSave(false, "Ошибка");
+        return false;
+      }
+    }
+
+    function setSave(ok, text) {
+      const el = document.getElementById("saveStatus");
+      document.getElementById("saveText").textContent = text;
+      el.classList.toggle("on", ok);
+    }
+
+    function toast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(t._t);
+      t._t = setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    function qty(key) { return state.qty[key] || 0; }
+
+    function calcFna() {
+      return ACTIVITIES.reduce((s, a) => s + a.points * qty(a.key), 0);
+    }
+
+    function renderRows() {
+      const box = document.getElementById("activities");
+      box.innerHTML = ACTIVITIES.map(a => {
+        const q = qty(a.key);
+        const sum = a.points * q;
+        return (
+          '<div class="row" data-key="' + a.key + '">' +
+            '<div><div class="row-name">' + a.name + '</div>' +
+            (a.hint ? '<div class="row-hint">' + a.hint + '</div>' : '') + '</div>' +
+            '<div class="pts-chip">' + a.points + '</div>' +
+            '<div class="qty-wrap">' +
+              '<button type="button" class="qty-btn" data-act="minus" data-key="' + a.key + '">−</button>' +
+              '<input type="number" class="qty-input" min="0" step="1" value="' + q + '" data-key="' + a.key + '" data-points="' + a.points + '" />' +
+              '<button type="button" class="qty-btn" data-act="plus" data-key="' + a.key + '">+</button>' +
+            '</div>' +
+            '<div class="row-sum' + (sum > 0 ? ' active' : '') + '" data-sum="' + a.key + '">' + sum + '</div>' +
+          '</div>'
+        );
+      }).join("");
+
+      box.querySelectorAll(".qty-input").forEach(inp => {
+        inp.addEventListener("input", onQtyInput);
+        inp.addEventListener("focus", e => e.target.select());
+      });
+      box.querySelectorAll(".qty-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.key;
+          const input = box.querySelector('.qty-input[data-key="' + key + '"]');
+          let v = parseInt(input.value, 10) || 0;
+          if (btn.dataset.act === "plus") v++;
+          else v = Math.max(0, v - 1);
+          input.value = v;
+          applyQty(key, v, parseInt(input.dataset.points, 10));
+        });
+      });
+    }
+
+    function onQtyInput(e) {
+      let v = parseInt(e.target.value, 10);
+      if (isNaN(v) || v < 0) v = 0;
+      e.target.value = v;
+      applyQty(e.target.dataset.key, v, parseInt(e.target.dataset.points, 10));
+    }
+
+    function applyQty(key, v, pts) {
+      if (v === 0) delete state.qty[key];
+      else state.qty[key] = v;
+      save();
+      const sumEl = document.querySelector('[data-sum="' + key + '"]');
+      const sum = pts * v;
+      sumEl.textContent = sum;
+      sumEl.classList.toggle("active", sum > 0);
+      updateTotals();
+    }
+
+    function updateTotals() {
+      const fna = calcFna();
+      const other = state.manual || 0;
+      const grand = fna + other;
+
+      document.getElementById("fnaTotal").textContent = fna;
+      document.getElementById("otherTotal").textContent = other;
+      document.getElementById("grandTotal").textContent = grand;
+
+      let fp = 0, op = 0;
+      if (grand > 0) {
+        fp = Math.round((fna / grand) * 100);
+        op = 100 - fp;
+      }
+      document.getElementById("fnaBar").style.width = fp + "%";
+      document.getElementById("otherBar").style.width = op + "%";
+      document.getElementById("fnaPct").textContent = "FNA " + fp + "%";
+      document.getElementById("otherPct").textContent = "Прочее " + op + "%";
+
+      const hint = document.getElementById("percentHint");
+      if (grand === 0) {
+        hint.className = "hint";
+        hint.textContent = "Рекомендация: 35–40% от повышения — работа FNA. Остальное можно набирать МП, поставками и т.д.";
+      } else if (fp >= 35 && fp <= 50) {
+        hint.className = "hint ok";
+        hint.textContent = "Доля FNA в норме (" + fp + "%). Процентное соотношение в пределах нормы";
+      } else if (fp < 35) {
+        hint.className = "hint warn";
+        hint.textContent = "Доля FNA ниже 35% (" + fp + "%). Добавь экзамены, патрули, КПП или тренировки.";
+      } else {
+        hint.className = "hint ok";
+        hint.textContent = "Доля FNA " + fp + "%. Можно добирать МП и поставками — FNA уже заметная часть.";
+      }
+    }
+
+    const manual = document.getElementById("manualPoints");
+    manual.addEventListener("input", e => {
+      let v = parseInt(e.target.value, 10);
+      if (isNaN(v) || v < 0) v = 0;
+      e.target.value = v;
+      state.manual = v;
+      save();
+      updateTotals();
+    });
+    manual.addEventListener("focus", e => e.target.select());
+
+    document.getElementById("saveBtn").onclick = () => {
+      if (save()) toast("Сохранено");
+    };
+    document.getElementById("resetBtn").onclick = () => {
+      if (confirm("Сбросить все значения?")) {
+        state = { qty: {}, manual: 0 };
+        save();
+        manual.value = 0;
+        renderRows();
+        updateTotals();
+        toast("Сброшено");
+      }
+    };
+
+    load();
+    manual.value = state.manual || 0;
+    renderRows();
+    updateTotals();
+  </script>
+</body>
+</html>
